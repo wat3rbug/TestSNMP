@@ -133,8 +133,6 @@ public class TestSNMP {
                         labels[row][col] = new JLabel(buffer.toString());
                     } catch (UnknownHostException uhe) {
                         labels[row][col] = new JLabel("Unknown");
-                        // nothing to do here, cause it would be caught earlier
-                        // result of bad design before things were learned
                     }                                     
                 }
                 if (col > 1) {
