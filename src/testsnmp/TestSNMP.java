@@ -47,17 +47,25 @@ public class TestSNMP {
     static final int NUM_OF_SECS = 5;
     static final int INSET = 5;
     static final int TIMEOUT_SEC = 5;
-    String address = null;
+    private static final int HOST_COL = 0;
+    private static final int FQDN_COL = 1;
+    private static final int HOST_IP_COL = 2;
+    private static final int CPU_COL = 4;
+    private static final int MEM_COL = 3;
+    static String communityString = "public";
+    static String cpuIdle = ".1.3.6.1.4.1.2021.11.11.0";  
+    static String totalMem = ".1.3.6.1.4.1.2021.4.5.0";
+    static String freedMem = ".1.3.6.1.4.1.2021.4.6.0";
+    
     static Snmp snmp = null;
     static JLabel hostTitle = null;
     static JLabel cpuTitle = null;
     static JLabel memUsedTitle = null;
     static JLabel ipTitle = null;
-    static String communityString = "public";
-    static String cpuIdle = ".1.3.6.1.4.1.2021.11.11.0";
+    static JLabel fqdnTitle = null;
     
-    static String totalMem = ".1.3.6.1.4.1.2021.4.5.0";
-    static String freedMem = ".1.3.6.1.4.1.2021.4.6.0";
+    
+    String address = null;
     
     public TestSNMP(String address) {
         
@@ -68,6 +76,7 @@ public class TestSNMP {
           
         JFrame frame = new JFrame("Pi Status");
         hostTitle = new JLabel("Host");
+        fqdnTitle = new JLabel("FQDN");
         ipTitle = new JLabel("IPv4");
         cpuTitle = new JLabel("CPU Idle");
         memUsedTitle = new JLabel("Memory In Use");
@@ -77,10 +86,13 @@ public class TestSNMP {
                 hostlisting = SNMPHostFactory.BuildHostArray("hosts.xml");
             } else {
                 for (int i = 0; i < args.length; i++) {
-                    if (hostlisting == null) hostlisting = SNMPHostFactory.BuildHostArray(args[i]);
+                    if (hostlisting == null) hostlisting = SNMPHostFactory
+                            .BuildHostArray(args[i]);
                     else {
-                        ArrayList<SNMPHost> temp = SNMPHostFactory.BuildHostArray(args[i]);
-                        for (int j = 0; j< temp.size(); j++) hostlisting.add(temp.get(j));
+                        ArrayList<SNMPHost> temp = SNMPHostFactory
+                                .BuildHostArray(args[i]);
+                        for (int j = 0; j< temp.size(); j++) hostlisting
+                                .add(temp.get(j));
                     }
                 }
             }
@@ -94,31 +106,42 @@ public class TestSNMP {
             System.out.println("File is not readable\n" + ioe.getMessage());
             System.exit(0);
         }
-        JLabel[][] labels = new JLabel[hostlisting.size()][4];
+        JLabel[][] labels = new JLabel[hostlisting.size()][5];
         
         // build frame
         
         frame.getContentPane().add(hostTitle);
+        frame.getContentPane().add(fqdnTitle);
         frame.getContentPane().add(ipTitle);
         frame.getContentPane().add(memUsedTitle);
         frame.getContentPane().add(cpuTitle);
         hostTitle.setBorder(new EmptyBorder(INSET,INSET,INSET,INSET));
         memUsedTitle.setBorder(new EmptyBorder(INSET,INSET,INSET,INSET));
         cpuTitle.setBorder(new EmptyBorder(INSET,INSET,INSET,INSET));
+        fqdnTitle.setBorder(new EmptyBorder(INSET,INSET,INSET,INSET));
+        ipTitle.setBorder(new EmptyBorder(INSET,INSET,INSET,INSET));
         hostTitle.setOpaque(true);
+        fqdnTitle.setOpaque(true);
         cpuTitle.setOpaque(true);
         ipTitle.setOpaque(true);
         memUsedTitle.setOpaque(true);
+        
+        // build the table
+        
         int maxCols = labels[0].length;
         int maxRows = labels.length;
         for (int row = 0; row < maxRows; row++) {
             for (int col = 0; col < maxCols; col++) {
                 SNMPHost host = hostlisting.get(row);
-                if (col == 0) {                    
+                if (col == HOST_COL) {                    
                     labels[row][col] = new JLabel(host.Hostname);
-                    labels[row][col].setBackground(SNMPHost.HostColor(host.color));                  
+                    Color hostColor = SNMPHost.HostColor(host.color);
+                    labels[row][col].setBackground(hostColor);                  
                 } 
-                if (col == 1) {
+                if (col == FQDN_COL) {
+                    labels[row][col] = new JLabel(host.fqdn);
+                }
+                if (col == HOST_IP_COL) {
                     try {
                         InetAddress addr = InetAddress.getByName(host.Hostname);
                         byte[] addrRaw = addr.getAddress();
@@ -135,15 +158,14 @@ public class TestSNMP {
                         labels[row][col] = new JLabel("Unknown");
                     }                                     
                 }
-                if (col > 1) {
+                if (col > 2) {
                     labels[row][col] = new JLabel("0%");
                           
                 labels[row][col].setOpaque(true);
                 labels[row][col].setBorder(new EmptyBorder(INSET,INSET,INSET,INSET));
                 }
                 frame.getContentPane().add(labels[row][col]);
-            }
-            
+            }      
         }        
         // display
         
@@ -177,8 +199,8 @@ public class TestSNMP {
                     cpu = hosts[i].getAsInt(new OID(cpuIdle)); 
                     System.out.println("CPU idle " + cpu);
                     usedMemFloat = getUsedMem(hosts[i]);             
-                    setCPUColor(labels[i][3], cpu);
-                    setMemColor(labels[i][2], usedMemFloat);
+                    setCPUColor(labels[i][CPU_COL], cpu);
+                    setMemColor(labels[i][MEM_COL], usedMemFloat);
 
                 } catch (IOException ioe) {
                     ioe.printStackTrace();
@@ -193,9 +215,11 @@ public class TestSNMP {
     }
     private static void flashTitle() {
         
-        cpuTitle.setBackground(Color.GREEN);
-        hostTitle.setBackground(Color.GREEN);
-        memUsedTitle.setBackground(Color.GREEN);
+        cpuTitle.setBackground(Color.green);
+        hostTitle.setBackground(Color.green);
+        memUsedTitle.setBackground(Color.green);
+        fqdnTitle.setBackground(Color.green);
+        ipTitle.setBackground(Color.green);
         try {
             Thread.sleep(SEC / 10);
         } catch (InterruptedException ie) {
@@ -204,6 +228,8 @@ public class TestSNMP {
         cpuTitle.setBackground(null);
         hostTitle.setBackground(null);
         memUsedTitle.setBackground(null);
+        fqdnTitle.setBackground(null);
+        ipTitle.setBackground(null);
     }
     private static float getUsedMem(TestSNMP machine) {
         
