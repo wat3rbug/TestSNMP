@@ -24,19 +24,19 @@ public class SNMPHost {
         Color result = null;
         switch (color) {
             case "red":
-                    result = Color.red;
+                    result = Color.RED;
                     break;
             case "green":
-                    result = Color.green;
+                    result = Color.GREEN;
                     break;
             case "gray":
-                    result = Color.gray;
+                    result = Color.GRAY;
                     break;
             case "yellow":
-                    result = Color.yellow;
+                    result = Color.YELLOW;
                     break;
             case "blue":
-                    result	= Color.blue;
+                    result = Color.BLUE;
                     break;
             case "orange":
                 result = Color.ORANGE;
