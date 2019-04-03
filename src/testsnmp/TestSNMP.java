@@ -50,12 +50,18 @@ public class TestSNMP {
     private static final int HOST_COL = 0;
     private static final int FQDN_COL = 1;
     private static final int HOST_IP_COL = 2;
-    private static final int CPU_COL = 4;
-    private static final int MEM_COL = 3;
+    private static final int CPU_COL = 5;
+    private static final int MEM_COL = 4;
+    private static final int LAN_UTIL_COL = 3;
+    private static final int NUM_OF_COLS = 6;
+    
     static String communityString = "public";
     static String cpuIdle = ".1.3.6.1.4.1.2021.11.11.0";  
     static String totalMem = ".1.3.6.1.4.1.2021.4.5.0";
     static String freedMem = ".1.3.6.1.4.1.2021.4.6.0";
+    static String ifInOctet = ".1.3.6.1.2.1.2.2.1.10.2";
+    static String ifOutOctet = ".1.3.6.1.2.1.2.2.1.16.2";
+    static String ifSpeed = ".1.3.6.1.2.1.2.2.1.5.2";
     
     static Snmp snmp = null;
     static JLabel hostTitle = null;
@@ -63,6 +69,7 @@ public class TestSNMP {
     static JLabel memUsedTitle = null;
     static JLabel ipTitle = null;
     static JLabel fqdnTitle = null;
+    static JLabel netUtilTitle = null;
     
     
     String address = null;
@@ -78,6 +85,7 @@ public class TestSNMP {
         hostTitle = new JLabel("Host");
         fqdnTitle = new JLabel("FQDN");
         ipTitle = new JLabel("IPv4");
+        netUtilTitle = new JLabel("LAN Util %");
         cpuTitle = new JLabel("CPU Idle");
         memUsedTitle = new JLabel("Memory In Use");
         ArrayList<SNMPHost> hostlisting = null;
@@ -106,13 +114,14 @@ public class TestSNMP {
             System.out.println("File is not readable\n" + ioe.getMessage());
             System.exit(0);
         }
-        JLabel[][] labels = new JLabel[hostlisting.size()][5];
+        JLabel[][] labels = new JLabel[hostlisting.size()][NUM_OF_COLS];
         
         // build frame
         
         frame.getContentPane().add(hostTitle);
         frame.getContentPane().add(fqdnTitle);
         frame.getContentPane().add(ipTitle);
+        frame.getContentPane().add(netUtilTitle);
         frame.getContentPane().add(memUsedTitle);
         frame.getContentPane().add(cpuTitle);
         hostTitle.setBorder(new EmptyBorder(INSET,INSET,INSET,INSET));
@@ -120,11 +129,13 @@ public class TestSNMP {
         cpuTitle.setBorder(new EmptyBorder(INSET,INSET,INSET,INSET));
         fqdnTitle.setBorder(new EmptyBorder(INSET,INSET,INSET,INSET));
         ipTitle.setBorder(new EmptyBorder(INSET,INSET,INSET,INSET));
+        netUtilTitle.setBorder(new EmptyBorder(INSET,INSET,INSET,INSET));
         hostTitle.setOpaque(true);
         fqdnTitle.setOpaque(true);
         cpuTitle.setOpaque(true);
         ipTitle.setOpaque(true);
         memUsedTitle.setOpaque(true);
+        netUtilTitle.setOpaque(true);
         
         // build the table
         
@@ -136,7 +147,8 @@ public class TestSNMP {
                 if (col == HOST_COL) {                    
                     labels[row][col] = new JLabel(host.Hostname);
                     Color hostColor = SNMPHost.HostColor(host.color);
-                    labels[row][col].setBackground(hostColor);                  
+                    labels[row][col].setBackground(hostColor); 
+                    labels[row][col].setOpaque(true);
                 } 
                 if (col == FQDN_COL) {
                     labels[row][col] = new JLabel(host.fqdn);
@@ -194,13 +206,39 @@ public class TestSNMP {
             }
             for (int i = 0; i < labels.length; i++) {
                 try {
+                    // get #s from machine
+                    
+                    int ifIn = hosts[i].getAsInt(new OID(ifInOctet));
+                    int ifOut = hosts[i].getAsInt(new OID(ifOutOctet));
+                    int ifSpd = hosts[i].getAsInt(new OID(ifSpeed));
+                    
+                    // get time delta
+                    
+                    long timestamp = System.currentTimeMillis();
+                    long timeDelta = (timestamp - hostlisting.get(i).prevTime);
+                    
+                    long nom = Math.max(ifIn, ifOut);
+   
+                    long denom = timeDelta * ifSpd;
+                    hostlisting.get(i).prevTime = timestamp;
+                    if (denom == 0) {
+                        labels[i][LAN_UTIL_COL].setText("Unknown");
+                    } else {
+                        float util = (nom * 800)/ (denom / 100);
+                        if (util > 100.0) util = (float) 100.0;
+                        setUtilColor(labels[i][LAN_UTIL_COL], util);
+                    }
+                } catch(IOException ioe) {
+                    ioe.printStackTrace();
+                    System.out.println("cant get net utilization");
+                }
+                try {
                     float usedMemFloat = 0;
                     int cpu = 0;
                     cpu = hosts[i].getAsInt(new OID(cpuIdle)); 
-                    System.out.println("CPU idle " + cpu);
                     usedMemFloat = getUsedMem(hosts[i]);             
                     setCPUColor(labels[i][CPU_COL], cpu);
-                    setMemColor(labels[i][MEM_COL], usedMemFloat);
+                    setPanelColor(labels[i][MEM_COL], usedMemFloat);
 
                 } catch (IOException ioe) {
                     ioe.printStackTrace();
@@ -220,6 +258,7 @@ public class TestSNMP {
         memUsedTitle.setBackground(Color.green);
         fqdnTitle.setBackground(Color.green);
         ipTitle.setBackground(Color.green);
+        netUtilTitle.setBackground(Color.green);
         try {
             Thread.sleep(SEC / 10);
         } catch (InterruptedException ie) {
@@ -230,15 +269,14 @@ public class TestSNMP {
         memUsedTitle.setBackground(null);
         fqdnTitle.setBackground(null);
         ipTitle.setBackground(null);
+        netUtilTitle.setBackground(null);
     }
     private static float getUsedMem(TestSNMP machine) {
         
         float result = 0;
         try {
             int totalMemInt = machine.getAsInt(new OID(totalMem));
-            System.out.println(machine.address + ": total mem:" + totalMemInt);
             int freeMemInt = machine.getAsInt(new OID(freedMem));
-            System.out.println(machine.address + ": free mem:" + freeMemInt);
             if (totalMemInt != 0) {
                 result = (100 * (totalMemInt - freeMemInt)/ totalMemInt);
             } 
@@ -270,7 +308,7 @@ public class TestSNMP {
         }
         label.setText(String.valueOf(value) + "%");
     }
-    private static void setMemColor(JLabel label, float value) {
+    private static void setPanelColor(JLabel label, float value) {
         
         if (value == 0.0) {
             label.setBackground(Color.blue);
@@ -289,6 +327,28 @@ public class TestSNMP {
             label.setForeground(null);
         }
         String result = String.format("%.1f", value);
+        label.setText(String.valueOf(value) + "%");
+    }
+    
+    private static void setUtilColor(JLabel label, float value) {
+        
+        if (value == 0.0) {
+            label.setBackground(Color.blue);
+            label.setForeground(Color.white);
+        }
+        if (value >= 50.0 && value < 75.0) {
+            label.setBackground(Color.yellow);
+            label.setForeground(Color.black);
+        }
+        if (value > 75.0) {
+            label.setBackground(Color.red);
+            label.setForeground(Color.black);
+        }
+        if (value < 50.0 && value != 0.0) {
+            label.setBackground(null);
+            label.setForeground(null);
+        }
+        String result = String.format("%.2f", value);
         label.setText(String.valueOf(value) + "%");
     }
     

@@ -13,6 +13,9 @@ public class SNMPHost {
     
     public String version;
     public String ipAddress;
+    public int prevIfOcts;
+    public int prevOfOctets;
+    public long prevTime;
     
     public String fqdn;
 	public String color;
