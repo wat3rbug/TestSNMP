@@ -212,21 +212,26 @@ public class TestSNMP {
                     int ifOut = hosts[i].getAsInt(new OID(ifOutOctet));
                     int ifSpd = hosts[i].getAsInt(new OID(ifSpeed));
                     
-                    // get time delta
+                    // get time and If deltas
                     
+                    long ifInDelta = ifIn - hostlisting.get(i).prevIfInOctet;
+                    long ifOutDelta = ifOut - hostlisting.get(i).prevIfOutOctet;
                     long timestamp = System.currentTimeMillis();
                     long timeDelta = (timestamp - hostlisting.get(i).prevTime);
                     
-                    long nom = Math.max(ifIn, ifOut);
+                    long nom = Math.max(ifInDelta, ifOutDelta) * 800;
    
-                    long denom = timeDelta * ifSpd;
+                    float denom = timeDelta * ifSpd;
                     hostlisting.get(i).prevTime = timestamp;
+                    hostlisting.get(i).prevIfInOctet = ifIn;
+                    hostlisting.get(i).prevIfOutOctet = ifOut;
                     if (denom == 0) {
                         labels[i][LAN_UTIL_COL].setText("Unknown");
                     } else {
-                        float util = (nom * 800)/ (denom / 100);
+                        System.out.println("nom: " + nom + " denom: " + denom);
+                        double util = nom/ denom;
                         if (util > 100.0) util = (float) 100.0;
-                        setUtilColor(labels[i][LAN_UTIL_COL], util);
+                        setUtilColor(labels[i][LAN_UTIL_COL], (float)util);
                     }
                 } catch(IOException ioe) {
                     ioe.printStackTrace();
@@ -348,7 +353,7 @@ public class TestSNMP {
             label.setBackground(null);
             label.setForeground(null);
         }
-        String result = String.format("%.2f", value);
+        String result = String.format("%.1f", value);
         label.setText(String.valueOf(value) + "%");
     }
     
