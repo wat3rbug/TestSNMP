@@ -1,25 +1,31 @@
 <?xml version="1.0"?>
 <snmp>
-<!--    <host name="apollo">-->
-<!--        <color>red</color>-->
-<!--        <fqdn>apollo.local</fqdn>-->
-<!--        <rocommunity>public</rocommunity>-->
-<!--        <version>1</version>-->
-<!--    </host>-->
-	<host name="kyteloop-db">
-		<color>green</color>
-		<fqdn>hermes</fqdn>
-		<rocommunity>public</rocommunity>
-		<version>1</version>
-	</host>
-	<host name="spiderbot">
-		<color>red</color>
-		<fqdn>hades</fqdn>
-		<rocommunity>public</rocommunity>
-		<version>1</version>
-	</host>
+    <host name="java-server">
+        <color>gray</color>
+        <fqdn>apollo</fqdn>
+        <rocommunity>public</rocommunity>
+        <version>1</version>
+    </host>
+    <host name="web-server">
+        <color>blue</color>
+        <fqdn>poseidon</fqdn>
+        <rocommunity>public</rocommunity>
+        <version>1</version>
+    </host>
+    <host name="kyteloop-db">
+            <color>green</color>
+            <fqdn>hermes</fqdn>
+            <rocommunity>public</rocommunity>
+            <version>1</version>
+    </host>
+    <host name="spiderbot">
+            <color>red</color>
+            <fqdn>hades</fqdn>
+            <rocommunity>public</rocommunity>
+            <version>1</version>
+    </host>
     <host name="pi-hole">
-		<color>yellow</color>
+        <color>yellow</color>
         <fqdn>ares</fqdn>
         <rocommunity>public</rocommunity>
         <version>1</version>

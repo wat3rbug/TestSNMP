@@ -16,6 +16,8 @@ public class SNMPHost {
     public int prevIfOcts;
     public int prevOfOctets;
     public long prevTime;
+    public long prevIfInOctet;
+    public long prevIfOutOctet;
     
     public String fqdn;
 	public String color;
