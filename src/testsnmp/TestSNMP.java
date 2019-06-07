@@ -148,6 +148,7 @@ public class TestSNMP {
                     labels[row][col] = new JLabel(host.Hostname);
                     Color hostColor = SNMPHost.HostColor(host.color);
                     labels[row][col].setBackground(hostColor); 
+                    if (hostColor == Color.BLUE) labels[row][col].setForeground(Color.white);
                     labels[row][col].setOpaque(true);
                 } 
                 if (col == FQDN_COL) {
@@ -214,22 +215,23 @@ public class TestSNMP {
                     
                     // get time and If deltas
                     
-                    long ifInDelta = ifIn - hostlisting.get(i).prevIfInOctet;
-                    long ifOutDelta = ifOut - hostlisting.get(i).prevIfOutOctet;
+                    long prevIfIn = hostlisting.get(i).prevIfInOctet;
+                    long prevIfOut = hostlisting.get(i).prevIfOutOctet;
+                    long ifInDelta = (ifIn > prevIfIn) ? ifIn - prevIfIn : 
+                            prevIfIn - ifIn;
+                    long ifOutDelta = (ifOut > prevIfOut) ? ifOut - prevIfOut 
+                            : prevIfOut - ifOut;
+
                     long timestamp = System.currentTimeMillis();
-                    long timeDelta = (timestamp - hostlisting.get(i).prevTime);
-                    
-                    long nom = Math.max(ifInDelta, ifOutDelta) * 800;
-   
-                    float denom = timeDelta * ifSpd;
+                    long nom = ifInDelta + ifOutDelta;
+                    float denom = ifSpd * 1000000;
                     hostlisting.get(i).prevTime = timestamp;
                     hostlisting.get(i).prevIfInOctet = ifIn;
                     hostlisting.get(i).prevIfOutOctet = ifOut;
                     if (denom == 0) {
                         labels[i][LAN_UTIL_COL].setText("Unknown");
                     } else {
-                        System.out.println("nom: " + nom + " denom: " + denom);
-                        double util = nom/ denom;
+                        double util = (nom / denom) * 400;
                         if (util > 100.0) util = (float) 100.0;
                         setUtilColor(labels[i][LAN_UTIL_COL], (float)util);
                     }
@@ -353,8 +355,8 @@ public class TestSNMP {
             label.setBackground(null);
             label.setForeground(null);
         }
-        String result = String.format("%.1f", value);
-        label.setText(String.valueOf(value) + "%");
+        String result = String.format("%2.1f", value);
+        label.setText(result + "%");
     }
     
     private void start() throws IOException {
