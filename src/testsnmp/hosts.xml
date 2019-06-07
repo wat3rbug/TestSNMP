@@ -1,36 +1,42 @@
 <?xml version="1.0"?>
 <snmp>
-    <host name="java-server">
+    <host name="loc-server">
+        <function>location server</function>
         <color>gray</color>
         <fqdn>apollo</fqdn>
         <rocommunity>public</rocommunity>
         <version>1</version>
     </host>
-    <host name="web-server">
+    <host name="db-server">
+        <function>database server</function>
+        <color>green</color>
+        <fqdn>hermes</fqdn>
+        <rocommunity>public</rocommunity>
+        <version>1</version>
+    </host>
+    <host name="dev-web-server">
+        <function>development web server</function>
         <color>blue</color>
         <fqdn>poseidon</fqdn>
         <rocommunity>public</rocommunity>
         <version>1</version>
     </host>
-    <host name="kyteloop-db">
-            <color>green</color>
-            <fqdn>hermes</fqdn>
-            <rocommunity>public</rocommunity>
-            <version>1</version>
-    </host>
-    <host name="spiderbot">
-            <color>red</color>
-            <fqdn>hades</fqdn>
-            <rocommunity>public</rocommunity>
-            <version>1</version>
-    </host>
     <host name="pi-hole">
+        <function>ad blocker</function>
         <color>yellow</color>
         <fqdn>ares</fqdn>
         <rocommunity>public</rocommunity>
         <version>1</version>
     </host>
+    <host name="prod-web-server">
+        <function>production web server</function>
+        <color>red</color>
+        <fqdn>hades</fqdn>
+        <rocommunity>public</rocommunity>
+        <version>1</version>
+    </host>
     <host name="freenas">
+        <function>Aarons file server</function>
         <color>orange</color>
         <fqdn>freenas</fqdn>
         <rocommunity>public</rocommunity>
