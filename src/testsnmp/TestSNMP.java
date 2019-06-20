@@ -12,6 +12,8 @@ package testsnmp;
 
 import java.awt.Color;
 import java.awt.GridLayout;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import java.io.IOException;
@@ -144,8 +146,10 @@ public class TestSNMP {
         for (int row = 0; row < maxRows; row++) {
             for (int col = 0; col < maxCols; col++) {
                 SNMPHost host = hostlisting.get(row);
-                if (col == HOST_COL) {                    
+                if (col == HOST_COL) {
+                    HostDetailsListener popup = new HostDetailsListener(host);
                     labels[row][col] = new JLabel(host.Hostname);
+                    labels[row][col].addMouseListener(popup);
                     Color hostColor = SNMPHost.HostColor(host.color);
                     labels[row][col].setBackground(hostColor); 
                     if (hostColor == Color.BLUE) labels[row][col].setForeground(Color.white);
@@ -378,7 +382,8 @@ public class TestSNMP {
         try {
             event = get(new OID[] { oid});
         } catch (RuntimeException re) {
-            System.out.println("GET timed out");
+            // do nothing
+            //System.out.println("GET timed out");
         }
         if ( event == null) {
             return 0;
