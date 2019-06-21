@@ -1,13 +1,11 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package testsnmp;
 
 import java.awt.Dimension;
 import java.awt.GridLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import javax.swing.BorderFactory;
+import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -16,15 +14,29 @@ import javax.swing.border.TitledBorder;
 import javax.swing.border.EmptyBorder;
 
 /**
- *
+ * This class provides a means of listing the details of a particular host.  The
+ * layout is fairly rudimentary as I only needed a few things more, but I wanted
+ * to keep the footprint, or the view of the application, limited.  It was not 
+ * included until after version 1.0
+ * 
  * @author douglas
  */
+
 public class HostDetails extends JFrame {
     
     private JPanel namePanel;
     private JPanel addresses;
     private JLabel ipv4;
     private JLabel ipv6;
+    
+    /**
+     * The constructor of the class.  Since this is a sing application, the 
+     * constructor does all the heavy lifting in order to display all the 
+     * elements needed.  At this time it displays name, function, network 
+     * utilization and if any special services are being used.
+     * 
+     * @param host The SNMPHost that is to be viewed.
+     */
     
     public HostDetails(SNMPHost host) {
         
@@ -57,9 +69,9 @@ public class HostDetails extends JFrame {
         networkBorder.setTitleJustification(TitledBorder.CENTER);
         addresses.setBorder(networkBorder);
         addresses.setLayout(new GridLayout(3, 2));
-        ipv4 = new JLabel();
+        ipv4 = new JLabel(host.getIPv4Address());
         ipv4.setBorder(empty);
-        ipv6 = new JLabel();
+        ipv6 = new JLabel(host.getIPv6Address());
         ipv6.setBorder(empty);
         JLabel ipv4Lbl = new JLabel("IPv4", SwingConstants.RIGHT);
         ipv4Lbl.setBorder(empty);
@@ -92,17 +104,35 @@ public class HostDetails extends JFrame {
         servicesPanel.add(srvStatusLbl);
         Service temp = null;
         while ((temp = host.next()) != null) {
-            JLabel nameTemp = new JLabel(temp.serviceName);
+            JLabel nameTemp = new JLabel(temp.serviceName,  SwingConstants.RIGHT);
             nameTemp.setBorder(empty);
-            JLabel statusTemp = new JLabel(temp.serviecOID);
+            JLabel statusTemp = new JLabel(temp.serviceOID);
             statusTemp.setBorder(empty);
             servicesPanel.add(nameTemp);
             servicesPanel.add(statusTemp);
         }
         this.getContentPane().add(servicesPanel);
-        this.getContentPane().setLayout(new GridLayout(3, 1));
-        this.setMinimumSize(new Dimension(200, 300));
+        
+        // the close button
+        JButton closer = new JButton("Close");
+        this.getContentPane().add(closer);
+        closer.addActionListener(new CloseListener());
+        this.getContentPane().setLayout(new GridLayout(4, 1));
+        this.setMinimumSize(new Dimension(200, 330));
         this.pack();
+    }
+    
+    /**
+     * This simple class just closes the detail view for the application.
+     */
+    
+    public class CloseListener implements ActionListener {
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            HostDetails.this.setVisible(false);
+        }
+        
     }
     
 }
