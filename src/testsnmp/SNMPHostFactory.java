@@ -13,11 +13,17 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.xml.sax.SAXException;
 
 /**
+ * This class reads the XML file and builds all of the information needed by the
+ * SNMPHosts so that polling can begin on them.  It does all of the XML parsing,
+ * so if there is an error, this mess is where you go.  Yes, it is convoluted 
+ * and Yes, the parsing is brittle.  Take care.
+ * 
  * @author Douglas Gardiner
  */
 public class SNMPHostFactory {
     
-    public static ArrayList<SNMPHost> BuildHostArray(String hostfile) throws IOException, ParserConfigurationException, SAXException {
+    public static ArrayList<SNMPHost> BuildHostArray(String hostfile) 
+            throws IOException, ParserConfigurationException, SAXException {
         
         ArrayList<SNMPHost> listing = new ArrayList<>();
 
@@ -42,9 +48,25 @@ public class SNMPHostFactory {
                         .getTextContent();
 		temp.color = eElement.getElementsByTagName("color").item(0)
 			.getTextContent();
+                NodeList tempSrv =  eElement.getElementsByTagName("services");
+                getService(tempSrv, temp);
                 listing.add(temp);
+
             }
         }
         return listing;        
+    }
+    
+    private static void getService(NodeList node, SNMPHost host) {
+
+        for (int i = 0; i < node.getLength(); i++) {
+            Node temp = node.item(i);
+            if (temp.getNodeType() == Node.ELEMENT_NODE) {
+                Service tempSrv = new Service();
+                host.addService(tempSrv);
+            }
+
+        }
+        
     }
 }
