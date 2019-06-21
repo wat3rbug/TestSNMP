@@ -19,7 +19,7 @@ import javax.swing.border.EmptyBorder;
  * to keep the footprint, or the view of the application, limited.  It was not 
  * included until after version 1.0
  * 
- * @author douglas
+ * @author Douglas Gardiner
  */
 
 public class HostDetails extends JFrame {
