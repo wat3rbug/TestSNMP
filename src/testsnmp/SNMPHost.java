@@ -27,9 +27,8 @@ public class SNMPHost {
     public String version;
     public String ipv4Address;
     public String ipv6Address;
+    public String function;
     public double net;  
-    private int prevIfOcts;
-    private int prevOfOctets;
     private long prevTime;
     private long prevIfInOctet;
     private long prevIfOutOctet;

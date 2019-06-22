@@ -20,6 +20,7 @@ import org.xml.sax.SAXException;
  * 
  * @author Douglas Gardiner
  */
+
 public class SNMPHostFactory {
     
     public static ArrayList<SNMPHost> BuildHostArray(String hostfile) 
@@ -40,6 +41,8 @@ public class SNMPHostFactory {
             if (nNode.getNodeType() == Node.ELEMENT_NODE) {
                 SNMPHost temp = new SNMPHost();
                 Element eElement = (Element)nNode;
+                temp.function = eElement.getElementsByTagName("function")
+                        .item(0).getTextContent();
                 temp.Hostname = eElement.getAttribute("name");
                 temp.fqdn = eElement.getElementsByTagName("fqdn").item(0)
                         .getTextContent();

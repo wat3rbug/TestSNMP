@@ -57,7 +57,7 @@ public class HostDetails extends JFrame {
         namePanel.setLayout(new GridLayout(2, 2));
         JLabel nameLbl = new JLabel("Function:", SwingConstants.RIGHT);
         nameLbl.setBorder(empty);
-        name = new JLabel(host.Hostname);
+        name = new JLabel(host.function);
         fqdn = new JLabel(host.fqdn);
         JLabel fqdnLbl = new JLabel("FQDN:", SwingConstants.RIGHT); 
         fqdnLbl.setBorder(empty);
