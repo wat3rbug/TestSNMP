@@ -6,6 +6,7 @@ import java.net.Inet6Address;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import org.snmp4j.smi.OID;
 
 /**
  * This class contains all the elements needed for the monitoring system to use
@@ -27,17 +28,42 @@ public class SNMPHost {
     public String ipv4Address;
     public String ipv6Address;
     public double net;  
-    public int prevIfOcts;
-    public int prevOfOctets;
-    public long prevTime;
-    public long prevIfInOctet;
-    public long prevIfOutOctet;
+    private int prevIfOcts;
+    private int prevOfOctets;
+    private long prevTime;
+    private long prevIfInOctet;
+    private long prevIfOutOctet;
     private int iterator;
     
     public String fqdn;
     public String color;
     
-    TestSNMP machine;
+    PiCheck machine;
+    
+    public String getNetUtil(int ifIn, int ifOut, int ifSpd) {
+
+        long prevIfIn = prevIfInOctet;
+        long prevIfOut = prevIfOutOctet;
+        long ifInDelta = (ifIn > prevIfIn) ? ifIn - prevIfIn : 
+                            prevIfIn - ifIn;
+        long ifOutDelta = (ifOut > prevIfOut) ? ifOut - prevIfOut 
+                            : prevIfOut - ifOut;
+        long timestamp = System.currentTimeMillis();
+        long nom = ifInDelta + ifOutDelta;
+        float denom = ifSpd * 1000000;
+        prevTime = timestamp;
+        prevIfInOctet = ifIn;
+        prevIfOutOctet = ifOut;
+        if (denom == 0) {
+            net = 0.0;
+            return "Unknown";
+        } else {
+            double util = (nom / denom) * 400;
+            if (util > 100.0) util = (float) 100.0;
+            net = util;
+            return new Float(util).toString();
+        }
+    }
     
     /**
      * This method gets String representation of the IPv4 Address that this host

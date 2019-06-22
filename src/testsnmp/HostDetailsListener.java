@@ -17,21 +17,32 @@ import java.awt.event.MouseEvent;
 public class HostDetailsListener extends MouseAdapter {
     
     private HostDetails details;
-    private boolean isVisible;
     
     public HostDetailsListener(SNMPHost host) {
+        
         details = new HostDetails(host);
-        isVisible = false;
     }
 
     @Override
     public void mouseClicked(MouseEvent e) {
-        details.setVisible((isVisible = !isVisible));
+        
+        Rectangle mainOrig = e.getComponent().getBounds(); 
+        Rectangle result = new Rectangle();
+        Dimension dim = e.getComponent().getSize();
+        result.x = mainOrig.x + dim.width + 10;
+        result.y = mainOrig.y + 47;
+        details.setBounds(result);
+        
+        // get updates
+        
+        details.updateView();
+        details.setVisible(!details.isVisible());
     }
 
     @Override
     public void mousePressed(MouseEvent e) {
         // not used
+        
     }
 
     @Override

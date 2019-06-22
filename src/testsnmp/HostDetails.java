@@ -4,6 +4,7 @@ import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -24,10 +25,14 @@ import javax.swing.border.EmptyBorder;
 
 public class HostDetails extends JFrame {
     
-    private JPanel namePanel;
-    private JPanel addresses;
+    private SNMPHost host;
     private JLabel ipv4;
-    private JLabel ipv6;
+    private JLabel ipv6;   
+    private JLabel name;
+    private JLabel fqdn;
+    private JLabel net;
+    private ArrayList<ServiceStatus>serviceDictionary;
+    
     
     /**
      * The constructor of the class.  Since this is a sing application, the 
@@ -39,20 +44,21 @@ public class HostDetails extends JFrame {
      */
     
     public HostDetails(SNMPHost host) {
-        
-        EmptyBorder empty = new EmptyBorder(0,10,0,10);
+            
         // name section
         
+        EmptyBorder empty = new EmptyBorder(0,10,0,10);
+        this.host = host;
         this.setTitle("Host: " + host.Hostname);
         TitledBorder nameBorder = BorderFactory.createTitledBorder("Name");
         nameBorder.setTitleJustification(TitledBorder.CENTER);
-        namePanel = new JPanel();
+        JPanel namePanel = new JPanel();
         namePanel.setBorder(nameBorder);
         namePanel.setLayout(new GridLayout(2, 2));
         JLabel nameLbl = new JLabel("Function:", SwingConstants.RIGHT);
         nameLbl.setBorder(empty);
-        JLabel name = new JLabel(host.Hostname);
-        JLabel fqdn = new JLabel(host.fqdn);
+        name = new JLabel(host.Hostname);
+        fqdn = new JLabel(host.fqdn);
         JLabel fqdnLbl = new JLabel("FQDN:", SwingConstants.RIGHT); 
         fqdnLbl.setBorder(empty);
         fqdnLbl.setAlignmentX(RIGHT_ALIGNMENT);
@@ -64,7 +70,7 @@ public class HostDetails extends JFrame {
         
         // network section
         
-        addresses = new JPanel();
+        JPanel addresses = new JPanel();
         TitledBorder networkBorder = BorderFactory.createTitledBorder("Network");
         networkBorder.setTitleJustification(TitledBorder.CENTER);
         addresses.setBorder(networkBorder);
@@ -79,7 +85,7 @@ public class HostDetails extends JFrame {
         ipv6Lbl.setBorder(empty);
         JLabel netLbl = new JLabel("Net util%:", SwingConstants.RIGHT);
         netLbl.setBorder(empty);
-        JLabel net = new JLabel(new Double(host.net).toString());
+        net = new JLabel(Double.toString(host.net));
         net.setBorder(empty);
         addresses.add(ipv4Lbl);
         addresses.add(ipv4);
@@ -89,7 +95,7 @@ public class HostDetails extends JFrame {
         addresses.add(net);
         this.getContentPane().add(addresses);
         
-        // service section
+        // srv section
         
         JPanel servicesPanel = new JPanel();
         TitledBorder serviceBorder = BorderFactory.createTitledBorder("Services");
@@ -103,6 +109,7 @@ public class HostDetails extends JFrame {
         servicesPanel.add(srvNameLbl);
         servicesPanel.add(srvStatusLbl);
         Service temp = null;
+        serviceDictionary = new ArrayList<ServiceStatus>();
         while ((temp = host.next()) != null) {
             JLabel nameTemp = new JLabel(temp.serviceName,  SwingConstants.RIGHT);
             nameTemp.setBorder(empty);
@@ -110,10 +117,14 @@ public class HostDetails extends JFrame {
             statusTemp.setBorder(empty);
             servicesPanel.add(nameTemp);
             servicesPanel.add(statusTemp);
+            ServiceStatus srv = new ServiceStatus(temp.serviceName, 
+                    statusTemp.getText());
+            serviceDictionary.add(srv);
         }
         this.getContentPane().add(servicesPanel);
         
         // the close button
+        
         JButton closer = new JButton("Close");
         this.getContentPane().add(closer);
         closer.addActionListener(new CloseListener());
@@ -131,8 +142,19 @@ public class HostDetails extends JFrame {
         @Override
         public void actionPerformed(ActionEvent e) {
             HostDetails.this.setVisible(false);
-        }
-        
+        }       
+    }
+    
+    /** 
+     * This method is used from the main to update the window because the host,
+     * by library design, cannot perform status updates about itself.
+     */
+    
+    public void updateView() {
+        // get info updated from host and display it
+        ipv4.setText(host.getIPv4Address());
+        ipv6.setText(host.getIPv6Address());
+        net.setText(Double.toString(host.net));
     }
     
 }
