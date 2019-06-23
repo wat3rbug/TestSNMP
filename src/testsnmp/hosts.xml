@@ -13,6 +13,12 @@
         <fqdn>hermes</fqdn>
         <rocommunity>public</rocommunity>
         <version>1</version>
+        <services>
+            <service>
+                <name>mysql</name>
+                <oid>mysqloid</oid>
+            </service>
+        </services>
     </host>
     <host name="dev-web-server">
         <function>development web server</function>
@@ -20,6 +26,12 @@
         <fqdn>poseidon</fqdn>
         <rocommunity>public</rocommunity>
         <version>1</version>
+        <services>
+            <service>
+                <name>httpd</name>
+                <oid>httpdoid</oid>
+            </service>
+        </services>
     </host>
     <host name="pi-hole">
         <function>ad blocker</function>
@@ -34,6 +46,16 @@
         <fqdn>hades</fqdn>
         <rocommunity>public</rocommunity>
         <version>1</version>
+        <services>
+            <service>
+                <name>httpd</name>
+                <oid>httpdoid</oid>
+            </service>
+            <service>
+                <name>ufw</name>
+                <oid>ufwoid</oid>
+            </service>
+        </services>
     </host>
     <host name="freenas">
         <function>Aarons file server</function>

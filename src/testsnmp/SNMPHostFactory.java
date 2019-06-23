@@ -33,13 +33,11 @@ public class SNMPHostFactory {
         DocumentBuilder dbBuilder = dbFactory.newDocumentBuilder();
         Document doc = dbBuilder.parse(hostFile);
         doc.getDocumentElement().normalize();
-        String root = doc.getDocumentElement().getNodeName();
         NodeList nList = doc.getElementsByTagName("host");
         for (int i = 0; i < nList.getLength(); i++) {
             Node nNode = nList.item(i);
-
-            if (nNode.getNodeType() == Node.ELEMENT_NODE) {
-                SNMPHost temp = new SNMPHost();
+            SNMPHost temp = new SNMPHost();
+            if (nNode.getNodeType() == Node.ELEMENT_NODE) {            
                 Element eElement = (Element)nNode;
                 temp.function = eElement.getElementsByTagName("function")
                         .item(0).getTextContent();
@@ -51,25 +49,29 @@ public class SNMPHostFactory {
                         .getTextContent();
 		temp.color = eElement.getElementsByTagName("color").item(0)
 			.getTextContent();
-                NodeList tempSrv =  eElement.getElementsByTagName("services");
-                getService(tempSrv, temp);
-                listing.add(temp);
-
+                Node srvNode = eElement.getElementsByTagName("services").item(0);
+                if (srvNode != null) {
+                    getServices(srvNode, temp);
+                }
             }
+            listing.add(temp);
         }
         return listing;        
     }
     
-    private static void getService(NodeList node, SNMPHost host) {
+    private static void getServices(Node basenode, SNMPHost host) {
 
-        for (int i = 0; i < node.getLength(); i++) {
-            Node temp = node.item(i);
-            if (temp.getNodeType() == Node.ELEMENT_NODE) {
-                Service tempSrv = new Service();
-                host.addService(tempSrv);
+        Element elem = (Element)basenode;
+        int maxNodes = elem.getElementsByTagName("name").getLength();
+        for (int i = 0; i < maxNodes; i++) {
+            Node firstName = elem.getElementsByTagName("name").item(i);
+            Node firstOid = elem.getElementsByTagName("oid").item(i);
+            if (firstName != null && firstOid != null) {
+                String name = firstName.getTextContent();
+                String oid = firstOid.getTextContent();
+                Service srv = new Service(name, oid);
+                host.addService(srv);
             }
-
-        }
-        
+        }    
     }
 }

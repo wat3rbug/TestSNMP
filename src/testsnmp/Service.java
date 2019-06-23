@@ -11,4 +11,9 @@ public class Service {
     
     public String serviceName;
     public String serviceOID;
+    
+    public Service (String name, String oid) {
+        serviceName = name;
+        serviceOID = oid;
+    }
 }
