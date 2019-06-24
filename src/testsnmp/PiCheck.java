@@ -44,10 +44,11 @@ public class PiCheck {
     static final int TIMEOUT_SEC = 5;
     private static final int HOST_COL = 0;
     private static final int FQDN_COL = 1;
-    private static final int CPU_COL = 4;
-    private static final int MEM_COL = 3;
-    private static final int LAN_UTIL_COL = 2;
-    private static final int NUM_OF_COLS = 5;
+    private static final int CPU_COL = 5;
+    private static final int MEM_COL = 4;
+    private static final int TEMP_COL = 2;
+    private static final int LAN_UTIL_COL = 3;
+    private static final int NUM_OF_COLS = 6;
     
     static String communityString = "public";
     static String cpuIdle = ".1.3.6.1.4.1.2021.11.11.0";  
@@ -56,10 +57,12 @@ public class PiCheck {
     static String ifInOctet = ".1.3.6.1.2.1.2.2.1.10.2";
     static String ifOutOctet = ".1.3.6.1.2.1.2.2.1.16.2";
     static String ifSpeed = ".1.3.6.1.2.1.2.2.1.5.2";
+    static String cpuTemp = ".1.3.6.1.2.1.25.1.8";
     
     static Snmp snmp = null;
     static JLabel hostTitle = null;
     static JLabel cpuTitle = null;
+    static JLabel cpuTempTitle = null;
     static JLabel memUsedTitle = null;
     static JLabel fqdnTitle = null;
     static JLabel netUtilTitle = null;
@@ -91,6 +94,7 @@ public class PiCheck {
         hostTitle = new JLabel("Host");
         fqdnTitle = new JLabel("FQDN");
         //ipTitle = new JLabel("IPv4");
+        cpuTempTitle = new JLabel("CPU Temp");
         netUtilTitle = new JLabel("LAN Util %");
         cpuTitle = new JLabel("CPU Idle");
         memUsedTitle = new JLabel("Memory In Use");
@@ -127,15 +131,18 @@ public class PiCheck {
         
         frame.getContentPane().add(hostTitle);
         frame.getContentPane().add(fqdnTitle);
+        frame.getContentPane().add(cpuTempTitle);
         frame.getContentPane().add(netUtilTitle);
         frame.getContentPane().add(memUsedTitle);
         frame.getContentPane().add(cpuTitle);
         hostTitle.setBorder(new EmptyBorder(INSET,INSET,INSET,INSET));
+        cpuTempTitle.setBorder(new EmptyBorder(INSET,INSET,INSET,INSET));
         memUsedTitle.setBorder(new EmptyBorder(INSET,INSET,INSET,INSET));
         cpuTitle.setBorder(new EmptyBorder(INSET,INSET,INSET,INSET));
         fqdnTitle.setBorder(new EmptyBorder(INSET,INSET,INSET,INSET));
         netUtilTitle.setBorder(new EmptyBorder(INSET,INSET,INSET,INSET));
         hostTitle.setOpaque(true);
+        cpuTempTitle.setOpaque(true);
         fqdnTitle.setOpaque(true);
         cpuTitle.setOpaque(true);
         memUsedTitle.setOpaque(true);
@@ -160,7 +167,10 @@ public class PiCheck {
                 if (col == FQDN_COL) {
                     labels[row][col] = new JLabel(host.fqdn);
                 }
-                if (col > 1) {
+                if (col == TEMP_COL) {
+                    labels[row][col] = new JLabel("0 oF");
+                }
+                if (col > TEMP_COL) {
                     labels[row][col] = new JLabel("0%");
                           
                 labels[row][col].setOpaque(true);
@@ -200,10 +210,17 @@ public class PiCheck {
                     int ifIn = hosts[i].getAsInt(new OID(ifInOctet));
                     int ifOut = hosts[i].getAsInt(new OID(ifOutOctet));
                     int ifSpd = hosts[i].getAsInt(new OID(ifSpeed));
+                    int cpuTempInt = hosts[i].getAsInt(new OID(cpuTemp));
+                    float cpuTempDisplay = PiCheck.celToFahr(cpuTempInt);
+                    String display = String.format("%.1f F", cpuTempDisplay);
+                    labels[i][TEMP_COL].setText(display);
+                    setCPUTempColor(labels[i][TEMP_COL], cpuTempDisplay);
+                    
+
+
                     
                     // get time and If deltas
                     
-
                     String net = hostlisting.get(i).getNetUtil(ifIn, ifOut, ifSpd);
                     labels[i][LAN_UTIL_COL].setText(net);
                     
@@ -232,6 +249,12 @@ public class PiCheck {
                 // what do do?
             }
         }
+    }
+    
+    private static float celToFahr(int celsius) {
+        float temp = celsius / 1000;
+        float fahrenheit = (temp * 9/5) + 32;
+        return fahrenheit;
     }
     
     private static void flashTitle() {
@@ -265,6 +288,21 @@ public class PiCheck {
         } catch (IOException ioe) {
         }                  
         return result;
+    }
+    
+    private static void setCPUTempColor(JLabel label, float value) {
+        if(value >= 100.0 && value < 110.0) {
+            label.setBackground(Color.yellow);
+            label.setForeground(Color.black);
+        }
+        if (value >= 110.0) {
+            label.setBackground(Color.red);
+            label.setForeground(Color.black);
+        }
+        if (value < 100.0) {
+            label.setBackground(null);
+            label.setForeground(null);
+        }
     }
     
     private static void setCPUColor(JLabel label, int value) {

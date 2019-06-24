@@ -6,6 +6,7 @@ import java.net.Inet6Address;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.Formatter;
 import org.snmp4j.smi.OID;
 
 /**
