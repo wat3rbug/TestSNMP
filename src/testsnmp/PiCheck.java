@@ -89,14 +89,18 @@ public class PiCheck {
      */
     
     public static void main(String[] args) {
+        
+        IWarning generalWarns = new IntWarningLevels(0, 50, 75);
+        IWarning tempWarns = new IntWarningLevels(32, 167, 176);
+        IWarning cpuWarns = new IntWarningLevels(0, 25, 50);
+        IWarning netWarns = new LanUtilWarning(0, 50, 75);
           
         JFrame frame = new JFrame("Pi Status");
         hostTitle = new JLabel("Host");
         fqdnTitle = new JLabel("FQDN");
-        //ipTitle = new JLabel("IPv4");
-        cpuTempTitle = new JLabel("CPU Temp");
+        cpuTempTitle = new JLabel("Temp oF");
         netUtilTitle = new JLabel("LAN Util %");
-        cpuTitle = new JLabel("CPU Idle");
+        cpuTitle = new JLabel("CPU Use");
         memUsedTitle = new JLabel("Memory In Use");
         ArrayList<SNMPHost> hostlisting = null;
         ArrayList<HostDetails> detailListing = null;
@@ -172,10 +176,10 @@ public class PiCheck {
                 }
                 if (col > TEMP_COL) {
                     labels[row][col] = new JLabel("0%");
-                          
+
+                }      
                 labels[row][col].setOpaque(true);
-                labels[row][col].setBorder(new EmptyBorder(INSET,INSET,INSET,INSET));
-                }
+                labels[row][col].setBorder(new EmptyBorder(INSET,INSET,INSET,INSET));    
                 frame.getContentPane().add(labels[row][col]);
             }      
         }        
@@ -211,34 +215,37 @@ public class PiCheck {
                     int ifOut = hosts[i].getAsInt(new OID(ifOutOctet));
                     int ifSpd = hosts[i].getAsInt(new OID(ifSpeed));
                     int cpuTempInt = hosts[i].getAsInt(new OID(cpuTemp));
-                    float cpuTempDisplay = PiCheck.celToFahr(cpuTempInt);
-                    String display = String.format("%.1f F", cpuTempDisplay);
+                    int net = hostlisting.get(i).getNetUtil(ifIn, ifOut, ifSpd);
+                    
+                    // display the temps
+                    
+                    int cpuTempDisplay = PiCheck.celToFahr(cpuTempInt);
+                    String display = String.format("%d F", cpuTempDisplay);
                     labels[i][TEMP_COL].setText(display);
-                    setCPUTempColor(labels[i][TEMP_COL], cpuTempDisplay);
-                    
-
-
-                    
-                    // get time and If deltas
-                    
-                    String net = hostlisting.get(i).getNetUtil(ifIn, ifOut, ifSpd);
-                    labels[i][LAN_UTIL_COL].setText(net);
-                    
-                    if (!net.equals("Unknown")) {
-                        setUtilColor(labels[i][LAN_UTIL_COL], new Float(net));
+                    // special case for temp default 0 which is 32F
+                    if (cpuTempDisplay == 32) {
+                        labels[i][TEMP_COL].setText("Unknown");
                     }
+                    tempWarns.updateWarning(labels[i][TEMP_COL], cpuTempDisplay);
+                   
+                    // display the lan utilization
+                                   
+                    labels[i][LAN_UTIL_COL].setText(Integer.toString(net) + "%");
+                    netWarns.updateWarning(labels[i][LAN_UTIL_COL], net);
                 } catch(IOException ioe) {
                     ioe.printStackTrace();
                     System.out.println("cant get net utilization");
                 }
+                // display cpu and memory
                 try {
-                    float usedMemFloat = 0;
+                    int usedMem = 0;
                     int cpu = 0;
-                    cpu = hosts[i].getAsInt(new OID(cpuIdle)); 
-                    usedMemFloat = getUsedMem(hosts[i]);             
-                    setCPUColor(labels[i][CPU_COL], cpu);
-                    setPanelColor(labels[i][MEM_COL], usedMemFloat);
-
+                    cpu = 100 - hosts[i].getAsInt(new OID(cpuIdle)); 
+                    usedMem = getUsedMem(hosts[i]);   
+                    labels[i][MEM_COL].setText(Integer.toString(usedMem) + "%");
+                    generalWarns.updateWarning(labels[i][MEM_COL], usedMem);
+                    labels[i][CPU_COL].setText(Integer.toString(cpu) + "%");
+                    cpuWarns.updateWarning(labels[i][CPU_COL], cpu);
                 } catch (IOException ioe) {
                     ioe.printStackTrace();
                 }
@@ -251,9 +258,9 @@ public class PiCheck {
         }
     }
     
-    private static float celToFahr(int celsius) {
+    private static int celToFahr(int celsius) {
         float temp = celsius / 1000;
-        float fahrenheit = (temp * 9/5) + 32;
+        int fahrenheit = Math.round((temp * 9/5) + 32);
         return fahrenheit;
     }
     
@@ -276,101 +283,17 @@ public class PiCheck {
         netUtilTitle.setBackground(null);
     }
     
-    private static float getUsedMem(PiCheck machine) {
-        
-        float result = 0;
+    private static int getUsedMem(PiCheck machine) {
+        int result = 0;
         try {
             int totalMemInt = machine.getAsInt(new OID(totalMem));
             int freeMemInt = machine.getAsInt(new OID(freedMem));
             if (totalMemInt != 0) {
-                result = (100 * (totalMemInt - freeMemInt)/ totalMemInt);
+                result = Math.round((100 * (totalMemInt - freeMemInt)/ totalMemInt));
             } 
         } catch (IOException ioe) {
-        }                  
+        }    
         return result;
-    }
-    
-    private static void setCPUTempColor(JLabel label, float value) {
-        if(value >= 100.0 && value < 110.0) {
-            label.setBackground(Color.yellow);
-            label.setForeground(Color.black);
-        }
-        if (value >= 110.0) {
-            label.setBackground(Color.red);
-            label.setForeground(Color.black);
-        }
-        if (value < 100.0) {
-            label.setBackground(null);
-            label.setForeground(null);
-        }
-    }
-    
-    private static void setCPUColor(JLabel label, int value) {
-        
-        if (value > 100) {
-            value = 100;
-        }
-        if (value == 0) {
-            label.setBackground(Color.blue);
-            label.setForeground(Color.white);
-        }
-        if (value >= 25 && value < 50) {
-            label.setBackground(Color.yellow);
-            label.setForeground(Color.black);
-        }
-        if (value < 25 && value != 0) {
-            label.setBackground(Color.red);
-            label.setForeground(Color.black);
-        }
-        if (value >= 50) {
-            label.setBackground(null);
-            label.setForeground(null);
-        }
-        label.setText(String.valueOf(value) + "%");
-    }
-    
-    private static void setPanelColor(JLabel label, float value) {
-        
-        if (value == 0.0) {
-            label.setBackground(Color.blue);
-            label.setForeground(Color.white);
-        }
-        if (value >= 50.0 && value < 75.0) {
-            label.setBackground(Color.yellow);
-            label.setForeground(Color.black);
-        }
-        if (value > 75.0) {
-            label.setBackground(Color.red);
-            label.setForeground(Color.black);
-        }
-        if (value < 50.0 && value != 0.0) {
-            label.setBackground(null);
-            label.setForeground(null);
-        }
-        String result = String.format("%.1f", value);
-        label.setText(String.valueOf(value) + "%");
-    }
-    
-    private static void setUtilColor(JLabel label, float value) {
-        
-        if (value == 0.0) {
-            label.setBackground(Color.blue);
-            label.setForeground(Color.white);
-        }
-        if (value >= 50.0 && value < 75.0) {
-            label.setBackground(Color.yellow);
-            label.setForeground(Color.black);
-        }
-        if (value > 75.0) {
-            label.setBackground(Color.red);
-            label.setForeground(Color.black);
-        }
-        if (value < 50.0 && value != 0.0) {
-            label.setBackground(null);
-            label.setForeground(null);
-        }
-        String result = String.format("%2.1f", value);
-        label.setText(result + "%");
     }
     
     private void start() throws IOException {

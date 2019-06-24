@@ -29,7 +29,7 @@ public class SNMPHost {
     public String ipv4Address;
     public String ipv6Address;
     public String function;
-    public double net;  
+    public int net;  
     private long prevTime;
     private long prevIfInOctet;
     private long prevIfOutOctet;
@@ -40,7 +40,7 @@ public class SNMPHost {
     
     PiCheck machine;
     
-    public String getNetUtil(int ifIn, int ifOut, int ifSpd) {
+    public int getNetUtil(int ifIn, int ifOut, int ifSpd) {
 
         long prevIfIn = prevIfInOctet;
         long prevIfOut = prevIfOutOctet;
@@ -55,13 +55,13 @@ public class SNMPHost {
         prevIfInOctet = ifIn;
         prevIfOutOctet = ifOut;
         if (denom == 0) {
-            net = 0.0;
-            return "Unknown";
+            net = 0;
+            return 0;
         } else {
             double util = (nom / denom) * 400;
             if (util > 100.0) util = (float) 100.0;
-            net = util;
-            return new Float(util).toString();
+            net = (int)Math.round(util);
+            return net;
         }
     }
     
