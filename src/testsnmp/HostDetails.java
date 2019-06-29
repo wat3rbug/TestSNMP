@@ -1,9 +1,11 @@
 package testsnmp;
 
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.IOException;
 import java.util.ArrayList;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -29,10 +31,8 @@ public class HostDetails extends JFrame {
     private JLabel ipv4;
     private JLabel ipv6;   
     private JLabel name;
-    private JLabel fqdn;
-    private JLabel net;
-    private ArrayList<ServiceStatus>serviceDictionary;
-    
+    private JLabel fqdn;   
+    private ArrayList<Service> services;
     
     /**
      * The constructor of the class.  Since this is a sing application, the 
@@ -46,7 +46,7 @@ public class HostDetails extends JFrame {
     public HostDetails(SNMPHost host) {
             
         // name section
-        
+
         EmptyBorder empty = new EmptyBorder(0,10,0,10);
         this.host = host;
         this.setTitle("Host: " + host.Hostname);
@@ -83,16 +83,10 @@ public class HostDetails extends JFrame {
         ipv4Lbl.setBorder(empty);
         JLabel ipv6Lbl = new JLabel("IPv6", SwingConstants.RIGHT);  
         ipv6Lbl.setBorder(empty);
-        JLabel netLbl = new JLabel("Net util%:", SwingConstants.RIGHT);
-        netLbl.setBorder(empty);
-        net = new JLabel(Double.toString(host.net));
-        net.setBorder(empty);
         addresses.add(ipv4Lbl);
         addresses.add(ipv4);
         addresses.add(ipv6Lbl);
         addresses.add(ipv6);
-        addresses.add(netLbl);
-        addresses.add(net);
         this.getContentPane().add(addresses);
         
         // srv section
@@ -109,17 +103,15 @@ public class HostDetails extends JFrame {
         servicesPanel.add(srvNameLbl);
         servicesPanel.add(srvStatusLbl);
         Service temp = null;
-        serviceDictionary = new ArrayList<ServiceStatus>();
+
         while ((temp = host.next()) != null) {
-            JLabel nameTemp = new JLabel(temp.serviceName,  SwingConstants.RIGHT);
-            nameTemp.setBorder(empty);
-            JLabel statusTemp = new JLabel(temp.serviceOID);
+            JLabel nameTemp = new JLabel(temp.serviceName, 
+                    SwingConstants.RIGHT);
+            SimpleServiceLabel statusTemp = new SimpleServiceLabel(temp);
+            nameTemp.setBorder(empty); // why do we have this?
             statusTemp.setBorder(empty);
             servicesPanel.add(nameTemp);
             servicesPanel.add(statusTemp);
-            ServiceStatus srv = new ServiceStatus(temp.serviceName, 
-                    statusTemp.getText());
-            serviceDictionary.add(srv);
         }
         this.getContentPane().add(servicesPanel);
         
@@ -129,8 +121,19 @@ public class HostDetails extends JFrame {
         this.getContentPane().add(closer);
         closer.addActionListener(new CloseListener());
         this.getContentPane().setLayout(new GridLayout(4, 1));
-        this.setMinimumSize(new Dimension(200, 330));
+        this.setMinimumSize(new Dimension(250, 330));
         this.pack();
+    }
+    
+    /**
+     * Gets the host used for polling.  Not my best move, but is result of this 
+     * library.  It is needed to poll the simple services.
+     * 
+     * @return The SNMPHost for which polling is done.  
+     */
+    
+    public SNMPHost getHost() {
+        return host;
     }
     
     /**
@@ -144,6 +147,8 @@ public class HostDetails extends JFrame {
             HostDetails.this.setVisible(false);
         }       
     }
+
+    
     
     /** 
      * This method is used from the main to update the window because the host,
@@ -151,10 +156,9 @@ public class HostDetails extends JFrame {
      */
     
     public void updateView() {
-        // get info updated from host and display it
+
         ipv4.setText(host.getIPv4Address());
         ipv6.setText(host.getIPv6Address());
-        net.setText(Double.toString(host.net));
     }
     
 }

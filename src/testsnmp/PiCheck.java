@@ -103,7 +103,7 @@ public class PiCheck {
         cpuTitle = new JLabel("CPU Use");
         memUsedTitle = new JLabel("Memory In Use");
         ArrayList<SNMPHost> hostlisting = null;
-        ArrayList<HostDetails> detailListing = null;
+        ArrayList<HostDetailsListener> detailListing = null;
         try {
             if (args.length == 0) {
                 hostlisting = SNMPHostFactory.BuildHostArray("hosts.xml");
@@ -156,16 +156,19 @@ public class PiCheck {
         
         int maxCols = labels[0].length;
         int maxRows = labels.length;
+        detailListing = new ArrayList<>();
         for (int row = 0; row < maxRows; row++) {
             for (int col = 0; col < maxCols; col++) {
                 SNMPHost host = hostlisting.get(row);
                 if (col == HOST_COL) {
                     HostDetailsListener popup = new HostDetailsListener(host);
+                    detailListing.add(popup);
                     labels[row][col] = new JLabel(host.Hostname);
                     labels[row][col].addMouseListener(popup);
                     Color hostColor = SNMPHost.HostColor(host.color);
                     labels[row][col].setBackground(hostColor); 
-                    if (hostColor == Color.BLUE) labels[row][col].setForeground(Color.white);
+                    if (hostColor == Color.BLUE) labels[row][col]
+                            .setForeground(Color.white);
                     labels[row][col].setOpaque(true);
                 } 
                 if (col == FQDN_COL) {
@@ -228,6 +231,13 @@ public class PiCheck {
                     }
                     tempWarns.updateWarning(labels[i][TEMP_COL], cpuTempDisplay);
                    
+                    // get status of services and display them
+                                        
+                    HostDetailsListener details = detailListing.get(i);
+                    SNMPHost currentHost = details.getHost(); 
+                    ArrayList<Service> services = currentHost.getServices();
+                    
+
                     // display the lan utilization
                                    
                     labels[i][LAN_UTIL_COL].setText(Integer.toString(net) + "%");
@@ -249,6 +259,8 @@ public class PiCheck {
                 } catch (IOException ioe) {
                     ioe.printStackTrace();
                 }
+                // display services if they appear on list for the host
+                
             }
             try {
                 Thread.sleep(SEC * NUM_OF_SECS);
@@ -271,6 +283,7 @@ public class PiCheck {
         memUsedTitle.setBackground(Color.green);
         fqdnTitle.setBackground(Color.green);
         netUtilTitle.setBackground(Color.green);
+        cpuTempTitle.setBackground(Color.green);
         try {
             Thread.sleep(SEC / 10);
         } catch (InterruptedException ie) {
@@ -281,6 +294,7 @@ public class PiCheck {
         memUsedTitle.setBackground(null);
         fqdnTitle.setBackground(null);
         netUtilTitle.setBackground(null);
+        cpuTempTitle.setBackground(null);
     }
     
     private static int getUsedMem(PiCheck machine) {

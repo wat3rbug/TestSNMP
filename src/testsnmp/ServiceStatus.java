@@ -12,9 +12,9 @@ package testsnmp;
 public class ServiceStatus {
     
     private String name;
-    private String status;
+    private boolean status;
     
-    public ServiceStatus(String name, String status) {
+    public ServiceStatus(String name, boolean status) {
         this.name = name;
         this.status = status;
     }

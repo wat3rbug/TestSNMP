@@ -65,6 +65,16 @@ public class SNMPHost {
         }
     }
     
+    public ArrayList<Service> getServices() {
+        return services;
+    }
+    
+    public boolean getServiceStatus(Service srv) {
+        boolean result = false;
+        
+        return result;
+    }
+    
     /**
      * This method gets String representation of the IPv4 Address that this host
      * uses.  It returns the first address. If there is no address then it will
