@@ -32,7 +32,7 @@ public class HostDetails extends JFrame {
     private JLabel ipv6;   
     private JLabel name;
     private JLabel fqdn;   
-    private ArrayList<Service> services;
+    private ArrayList<SimpleServiceLabel> srvResults;
     
     /**
      * The constructor of the class.  Since this is a sing application, the 
@@ -47,6 +47,7 @@ public class HostDetails extends JFrame {
             
         // name section
 
+        srvResults = new ArrayList<SimpleServiceLabel>();
         EmptyBorder empty = new EmptyBorder(0,10,0,10);
         this.host = host;
         this.setTitle("Host: " + host.Hostname);
@@ -108,6 +109,7 @@ public class HostDetails extends JFrame {
             JLabel nameTemp = new JLabel(temp.serviceName, 
                     SwingConstants.RIGHT);
             SimpleServiceLabel statusTemp = new SimpleServiceLabel(temp);
+            srvResults.add(statusTemp);
             nameTemp.setBorder(empty); // why do we have this?
             statusTemp.setBorder(empty);
             servicesPanel.add(nameTemp);
@@ -148,7 +150,10 @@ public class HostDetails extends JFrame {
         }       
     }
 
-    
+    public SimpleServiceLabel getSrvLabelAt(int index) {
+        if (index >= srvResults.size()) return null;
+        else return srvResults.get(index);
+    }
     
     /** 
      * This method is used from the main to update the window because the host,

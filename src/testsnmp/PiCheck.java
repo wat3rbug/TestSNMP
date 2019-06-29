@@ -234,8 +234,17 @@ public class PiCheck {
                     // get status of services and display them
                                         
                     HostDetailsListener details = detailListing.get(i);
-                    SNMPHost currentHost = details.getHost(); 
-                    ArrayList<Service> services = currentHost.getServices();
+                    SimpleServiceLabel srvLabel = details.getSrvLabelAt(0);
+
+                    int k = 0;
+                    while (srvLabel != null) {
+                        Service srv = srvLabel.getService();
+                        int result = hosts[i].getAsInt(new OID(srv.serviceOID));
+                        srvLabel.updateServiceStatus(result);
+                        k++;
+                        srvLabel = details.getSrvLabelAt(k);
+                    }
+                    
                     
 
                     // display the lan utilization

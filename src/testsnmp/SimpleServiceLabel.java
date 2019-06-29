@@ -25,6 +25,9 @@ public class SimpleServiceLabel extends JLabel {
         service = srv;
     }
     
+    public Service getService() {
+        return service;
+    }
     public String getOIDName() {
         return service.serviceOID;
     }

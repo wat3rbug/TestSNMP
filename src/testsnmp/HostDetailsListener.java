@@ -22,20 +22,12 @@ public class HostDetailsListener extends MouseAdapter {
         
         details = new HostDetails(host);
     }
-    
-    /**
-     * Simple return of SNMPHost that is used for polling.
-     * 
-     * @return The SNMPHost needed for polling. 
-     */
-    
-    public SNMPHost getHost() {
-        return details.getHost();
-    }
-    
-    public HostDetails getServiceDetails() {
-        return details;
-    }
+
+   public SimpleServiceLabel getSrvLabelAt(int index) {
+       // null check is done at HostDetails
+       return details.getSrvLabelAt(index);
+   } 
+
 
     @Override
     public void mouseClicked(MouseEvent e) {
