@@ -1,11 +1,9 @@
 package testsnmp;
 
-import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.IOException;
 import java.util.ArrayList;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -13,6 +11,7 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
+import javax.swing.border.Border;
 import javax.swing.border.TitledBorder;
 import javax.swing.border.EmptyBorder;
 
@@ -96,21 +95,26 @@ public class HostDetails extends JFrame {
         TitledBorder serviceBorder = BorderFactory.createTitledBorder("Services");
         serviceBorder.setTitleJustification(TitledBorder.CENTER);
         servicesPanel.setBorder(serviceBorder);
-        servicesPanel.setLayout(new GridLayout(host.numOfServices() + 1, 2));
+        servicesPanel.setLayout(new GridLayout(host.numOfServices() + 2, 2));
         JLabel srvNameLbl = new JLabel("Name", SwingConstants.RIGHT);
         srvNameLbl.setBorder(empty);
         JLabel srvStatusLbl = new JLabel("Status");
         srvStatusLbl.setBorder(empty);
         servicesPanel.add(srvNameLbl);
         servicesPanel.add(srvStatusLbl);
-        Service temp = null;
-
+        Service temp = host.next();
+        // cludgy, but need to set default if there are no special services to 
+        // monitor
+        if (temp == null) {
+            setEmptyServicePanel(servicesPanel);
+        }
+        host.reset();
         while ((temp = host.next()) != null) {
             JLabel nameTemp = new JLabel(temp.serviceName, 
                     SwingConstants.RIGHT);
             SimpleServiceLabel statusTemp = new SimpleServiceLabel(temp);
             srvResults.add(statusTemp);
-            nameTemp.setBorder(empty); // why do we have this?
+            nameTemp.setBorder(empty); 
             statusTemp.setBorder(empty);
             servicesPanel.add(nameTemp);
             servicesPanel.add(statusTemp);
@@ -125,6 +129,19 @@ public class HostDetails extends JFrame {
         this.getContentPane().setLayout(new GridLayout(4, 1));
         this.setMinimumSize(new Dimension(250, 330));
         this.pack();
+    }
+    
+    private void setEmptyServicePanel(JPanel servicePane) {
+        Border empty = BorderFactory.createEmptyBorder();
+        JLabel name = new JLabel("None", SwingConstants.RIGHT);
+        JLabel status = new JLabel("N/A");
+        name.setBackground(null);
+        name.setForeground(null);
+        status.setBackground(null);
+        status.setForeground(null);
+        servicePane.add(name);
+        servicePane.add(status);
+        servicePane.setBorder(empty);
     }
     
     /**
@@ -150,6 +167,20 @@ public class HostDetails extends JFrame {
         }       
     }
 
+    /**
+     * Gets the label which include simple service information.  It was the best
+     * strategy I had at the time to convey the OID needed for querying the 
+     * service from the Pi and provides results to the label.  Positive integers
+     * are necessary, and if one is passed to this method that is not in range,
+     * a null value is returned.
+     * 
+     * @param index The positive integer for a particular service.  The number 
+     * of the service is determined solely by the listing order in the xml file 
+     * for the configuration of the host.
+     * @return A JLabel that also includes information about the service it 
+     * represents.
+     */
+    
     public SimpleServiceLabel getSrvLabelAt(int index) {
         if (index >= srvResults.size()) return null;
         else return srvResults.get(index);

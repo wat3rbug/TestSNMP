@@ -6,8 +6,6 @@ import java.net.Inet6Address;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
-import java.util.Formatter;
-import org.snmp4j.smi.OID;
 
 /**
  * This class contains all the elements needed for the monitoring system to use
@@ -19,6 +17,7 @@ import org.snmp4j.smi.OID;
  * 
  * @author Douglas Gardiner
  */
+
 public class SNMPHost {
     
     private ArrayList<Service> services;
@@ -194,7 +193,8 @@ public class SNMPHost {
     }
     
     /**
-     * This method resets the special service iterator to the first element.
+     * This method resets the special service iterator to the first element. 
+     * This may be deleted depending on whether it is used. 
      */
     
     public void reset()
@@ -209,6 +209,7 @@ public class SNMPHost {
      * @return An integer value for the number of special services this host 
      * polls. 
      */
+    
     public int numOfServices() {
         if (services == null) return 0;
         return services.size();

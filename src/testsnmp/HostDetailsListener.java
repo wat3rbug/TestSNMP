@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package testsnmp;
 
 import java.awt.Dimension;
@@ -11,7 +6,10 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
 /**
- *
+ * This class provides a method of interaction for the HostDetails class.  At 
+ * this time only mouse clicks are noticed.  The other methods that are used are
+ * only pass-through to the original HostDetail object.
+ * 
  * @author douglas
  */
 public class HostDetailsListener extends MouseAdapter {
@@ -23,10 +21,24 @@ public class HostDetailsListener extends MouseAdapter {
         details = new HostDetails(host);
     }
 
-   public SimpleServiceLabel getSrvLabelAt(int index) {
+    /**
+     * Gets the label which include simple service information.  It was the best
+     * strategy I had at the time to convey the OID needed for querying the 
+     * service from the Pi and provides results to the label.  Positive integers
+     * are necessary, and if one is passed to this method that is not in range,
+     * a null value is returned.
+     * 
+     * @param index The positive integer for a particular service.  The number 
+     * of the service is determined solely by the listing order in the xml file 
+     * for the configuration of the host.
+     * @return A JLabel that also includes information about the service it 
+     * represents.
+     */
+    
+    public SimpleServiceLabel getSrvLabelAt(int index) {
        // null check is done at HostDetails
        return details.getSrvLabelAt(index);
-   } 
+    } 
 
 
     @Override

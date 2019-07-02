@@ -23,6 +23,22 @@ import org.xml.sax.SAXException;
 
 public class SNMPHostFactory {
     
+    /**
+     * The reads an xml file, if one is given and returns an array of SNMPHOSTs
+     * based.  It's a simple factory method for giving SNMPHOSTS based on that 
+     * file.  I have some debate on whether to move the exception handling to 
+     * this method or not, since the application should just quit if the file
+     * is not to the standards for XML.  If I move it here, I have to deal with
+     * nulls at the application and complicate this portion.  It's already 
+     * complicated.
+     * 
+     * @param hostfile . The XML file to parse for hosts.
+     * @return A list of hosts to be used by the application.
+     * @throws IOException A default exception when the others don't happen.
+     * @throws ParserConfigurationException Because the file can't be parsed.
+     * @throws SAXException Because the XML parsing error is more specific.
+     */
+    
     public static ArrayList<SNMPHost> BuildHostArray(String hostfile) 
             throws IOException, ParserConfigurationException, SAXException {
         

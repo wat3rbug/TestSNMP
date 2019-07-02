@@ -75,6 +75,7 @@ public class PiCheck {
      * 
      * @param address The string of an IPv4 address to use.
      */
+    
     public PiCheck(String address) {
         
         this.address = "udp:/" + address + "/161";
@@ -225,6 +226,7 @@ public class PiCheck {
                     int cpuTempDisplay = PiCheck.celToFahr(cpuTempInt);
                     String display = String.format("%d F", cpuTempDisplay);
                     labels[i][TEMP_COL].setText(display);
+                    
                     // special case for temp default 0 which is 32F
                     if (cpuTempDisplay == 32) {
                         labels[i][TEMP_COL].setText("Unknown");
@@ -235,7 +237,6 @@ public class PiCheck {
                                         
                     HostDetailsListener details = detailListing.get(i);
                     SimpleServiceLabel srvLabel = details.getSrvLabelAt(0);
-
                     int k = 0;
                     while (srvLabel != null) {
                         Service srv = srvLabel.getService();
@@ -243,10 +244,7 @@ public class PiCheck {
                         srvLabel.updateServiceStatus(result);
                         k++;
                         srvLabel = details.getSrvLabelAt(k);
-                    }
-                    
-                    
-
+                    }                    
                     // display the lan utilization
                                    
                     labels[i][LAN_UTIL_COL].setText(Integer.toString(net) + "%");
@@ -256,6 +254,7 @@ public class PiCheck {
                     System.out.println("cant get net utilization");
                 }
                 // display cpu and memory
+                
                 try {
                     int usedMem = 0;
                     int cpu = 0;
@@ -267,9 +266,7 @@ public class PiCheck {
                     cpuWarns.updateWarning(labels[i][CPU_COL], cpu);
                 } catch (IOException ioe) {
                     ioe.printStackTrace();
-                }
-                // display services if they appear on list for the host
-                
+                }  
             }
             try {
                 Thread.sleep(SEC * NUM_OF_SECS);
@@ -296,7 +293,7 @@ public class PiCheck {
         try {
             Thread.sleep(SEC / 10);
         } catch (InterruptedException ie) {
-            
+            // what to do?
         }
         cpuTitle.setBackground(null);
         hostTitle.setBackground(null);
@@ -315,6 +312,7 @@ public class PiCheck {
                 result = Math.round((100 * (totalMemInt - freeMemInt)/ totalMemInt));
             } 
         } catch (IOException ioe) {
+            // do nothing and just move on
         }    
         return result;
     }
@@ -337,6 +335,7 @@ public class PiCheck {
      * @return A string value from the OID.
      * @throws IOException thrown if nothing is returned.
      */
+    
     public String getAsString(OID oid) throws IOException {
 
         ResponseEvent event = get(new OID[] { oid });
