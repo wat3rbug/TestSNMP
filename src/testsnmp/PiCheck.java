@@ -43,12 +43,11 @@ public class PiCheck {
     static final int INSET = 5;
     static final int TIMEOUT_SEC = 5;
     private static final int HOST_COL = 0;
-    private static final int FQDN_COL = 1;
-    private static final int CPU_COL = 5;
-    private static final int MEM_COL = 4;
-    private static final int TEMP_COL = 2;
-    private static final int LAN_UTIL_COL = 3;
-    private static final int NUM_OF_COLS = 6;
+    private static final int CPU_COL = 4;
+    private static final int MEM_COL = 3;
+    private static final int TEMP_COL = 1;
+    private static final int LAN_UTIL_COL = 2;
+    private static final int NUM_OF_COLS = 5;
     
     static String communityString = "public";
     static String cpuIdle = ".1.3.6.1.4.1.2021.11.11.0";  
@@ -64,7 +63,6 @@ public class PiCheck {
     static JLabel cpuTitle = null;
     static JLabel cpuTempTitle = null;
     static JLabel memUsedTitle = null;
-    static JLabel fqdnTitle = null;
     static JLabel netUtilTitle = null;
       
     String address = null;
@@ -98,7 +96,6 @@ public class PiCheck {
           
         JFrame frame = new JFrame("Pi Status");
         hostTitle = new JLabel("Host");
-        fqdnTitle = new JLabel("FQDN");
         cpuTempTitle = new JLabel("Temp oF");
         netUtilTitle = new JLabel("LAN Util %");
         cpuTitle = new JLabel("CPU Use");
@@ -135,7 +132,6 @@ public class PiCheck {
         // build frame
         
         frame.getContentPane().add(hostTitle);
-        frame.getContentPane().add(fqdnTitle);
         frame.getContentPane().add(cpuTempTitle);
         frame.getContentPane().add(netUtilTitle);
         frame.getContentPane().add(memUsedTitle);
@@ -144,11 +140,9 @@ public class PiCheck {
         cpuTempTitle.setBorder(new EmptyBorder(INSET,INSET,INSET,INSET));
         memUsedTitle.setBorder(new EmptyBorder(INSET,INSET,INSET,INSET));
         cpuTitle.setBorder(new EmptyBorder(INSET,INSET,INSET,INSET));
-        fqdnTitle.setBorder(new EmptyBorder(INSET,INSET,INSET,INSET));
         netUtilTitle.setBorder(new EmptyBorder(INSET,INSET,INSET,INSET));
         hostTitle.setOpaque(true);
         cpuTempTitle.setOpaque(true);
-        fqdnTitle.setOpaque(true);
         cpuTitle.setOpaque(true);
         memUsedTitle.setOpaque(true);
         netUtilTitle.setOpaque(true);
@@ -172,9 +166,6 @@ public class PiCheck {
                             .setForeground(Color.white);
                     labels[row][col].setOpaque(true);
                 } 
-                if (col == FQDN_COL) {
-                    labels[row][col] = new JLabel(host.fqdn);
-                }
                 if (col == TEMP_COL) {
                     labels[row][col] = new JLabel("0 oF");
                 }
@@ -287,7 +278,6 @@ public class PiCheck {
         cpuTitle.setBackground(Color.green);
         hostTitle.setBackground(Color.green);
         memUsedTitle.setBackground(Color.green);
-        fqdnTitle.setBackground(Color.green);
         netUtilTitle.setBackground(Color.green);
         cpuTempTitle.setBackground(Color.green);
         try {
@@ -298,7 +288,6 @@ public class PiCheck {
         cpuTitle.setBackground(null);
         hostTitle.setBackground(null);
         memUsedTitle.setBackground(null);
-        fqdnTitle.setBackground(null);
         netUtilTitle.setBackground(null);
         cpuTempTitle.setBackground(null);
     }
